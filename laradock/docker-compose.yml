@@ -5,6 +5,8 @@ services:
       dockerfile: ./docker/php-fpm/Dockerfile
     volumes:
       - ${APP_CODE_PATH_HOST}:/var/www/html/
+    ports:
+      - '5173:5173'
 
   php-fpm:
     build:
