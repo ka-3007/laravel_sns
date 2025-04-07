@@ -27,7 +27,7 @@ class BareMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Bare Mail',
+            subject: 'パスワード再設定',
         );
     }
 
