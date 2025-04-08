@@ -5,17 +5,16 @@ use App\Http\Controllers\TagController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
-//TODO:articlesをグループにまとめる
 Route::get('/', [ArticleController::class, 'index'])->name('articles.index');
 Route::middleware('auth')->group(function () {
     Route::resource('/articles', ArticleController::class)->except(['index', 'show']);
+
+    Route::prefix('articles')->name('articles.')->group(function () {
+        Route::put('/{article}/like', [ArticleController::class, 'like'])->name('like');
+        Route::delete('/{article}/like', [ArticleController::class, 'unlike'])->name('unlike');
+    });
 });
 Route::resource('/articles', ArticleController::class)->only(['show']);
-
-Route::prefix('articles')->name('articles.')->middleware('auth')->group(function () {
-    Route::put('/{article}/like', [ArticleController::class, 'like'])->name('like');
-    Route::delete('/{article}/like', [ArticleController::class, 'unlike'])->name('unlike');
-});
 
 Route::get('/tags/{name}', [TagController::class, 'show'])->name('tags.show');
 
