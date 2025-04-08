@@ -64,22 +64,6 @@ export default {
 
             this.isFollowedBy = false
         },
-
-        updateFollowCounts(isFollowing) {
-            const followersCountElement = document.getElementById('followers-count');
-            let currentFollowers = parseInt(followersCountElement.textContent, 10);
-
-            if (isFollowing) {
-                followersCountElement.textContent = currentFollowers + 1;
-            } else {
-                followersCountElement.textContent = currentFollowers - 1;
-            }
-        }
     },
-    watch: {
-        isFollowedBy(isFollowing) {
-            this.updateFollowCounts(isFollowing);
-        }
-    }
 }
 </script>

@@ -18,10 +18,10 @@
   </div>
   <div class="card-body">
     <div class="card-text">
-      <a href="" class="text-muted">
+      <a href="{{ route('users.followings', ['name' => $user->name]) }}" class="text-muted">
         <span id="followings-count">{{ $user->count_followings }}</span> フォロー
       </a>
-      <a href="" class="text-muted">
+      <a href="{{ route('users.followers', ['name' => $user->name]) }}" class="text-muted">
         <span id="followers-count">{{ $user->count_followers }}</span> フォロワー
       </a>
     </div>
