@@ -4,13 +4,18 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ArticleRequest;
 use App\Models\Article;
+use App\Models\Tag;
 use Illuminate\Http\Request;
+use App\Services\TagService;
 
 class ArticleController extends Controller
 {
-    public function __construct()
+    protected $tagService;
+
+    public function __construct(TagService $tagService)
     {
         $this->authorizeResource(Article::class, 'article');
+        $this->tagService = $tagService;
     }
 
     public function index()
@@ -22,7 +27,10 @@ class ArticleController extends Controller
 
     public function create()
     {
-        return view('articles.create');
+        //タグテーブルから全てのタグ情報を取得
+        $allTagNames = $this->tagService->getAllTags();
+
+        return view('articles.create', compact('allTagNames'));
     }
 
     public function store(ArticleRequest $request, Article $article)
@@ -30,17 +38,37 @@ class ArticleController extends Controller
         $article->fill($request->all());
         $article->user_id = $request->user()->id;
         $article->save();
+
+        $request->tags->each(function ($tagName) use ($article) {
+            $tag = Tag::firstOrCreate(['name' => $tagName]);
+            $article->tags()->attach($tag);
+        });
+
         return redirect()->route('articles.index');
     }
 
     public function edit(Article $article)
     {
-        return view('articles.edit', compact('article'));
+        $tagNames = $article->tags->map(function ($tag) {
+            return ['text' => $tag->name];
+        });
+
+        //タグテーブルから全てのタグ情報を取得
+        $allTagNames = $this->tagService->getAllTags();
+
+        return view('articles.edit', compact('article', 'tagNames', 'allTagNames'));
     }
 
     public function update(ArticleRequest $request, Article $article)
     {
         $article->fill($request->all())->save();
+
+        $article->tags()->detach();
+        $request->tags->each(function ($tagName) use ($article) {
+            $tag = Tag::firstOrCreate(['name' => $tagName]);
+            $article->tags()->attach($tag);
+        });
+
         return redirect()->route('articles.index');
     }
 
