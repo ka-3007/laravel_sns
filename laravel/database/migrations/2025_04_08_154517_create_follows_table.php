@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('follows', function (Blueprint $table) {
-            $table->id();
+            $table->bigIncrements('id');
             $table->bigInteger('follower_id');
             $table->foreign('follower_id')
                 ->references('id')
