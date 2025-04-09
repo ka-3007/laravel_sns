@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\ArticleRequest;
 use App\Models\Article;
 use App\Models\Tag;
+use App\Services\FirebaseImageUploader;
 use Illuminate\Http\Request;
 use App\Services\TagService;
 use Illuminate\Support\Str;
@@ -34,42 +35,22 @@ class ArticleController extends Controller
         return view('articles.create', compact('allTagNames'));
     }
 
-    public function store(ArticleRequest $request, Article $article)
+    public function store(ArticleRequest $request, Article $article, FirebaseImageUploader $uploader)
     {
-        // 初期化：画像URLはnull
+        // アップロードされた画像があればFirebaseにアップロード
         $imagePaths = null;
-        // 画像のアップロード処理
         if ($request->hasFile('images')) {
             $files = $request->file('images');
-            $firebaseStorage = app('firebase.storage');
-            $bucketName = env("FIREBASE_STORAGE_BUCKET");
-            $bucket = $firebaseStorage->getBucket($bucketName);
-
-            $imagePaths = [];  // 画像の保存パスを格納する配列
-            foreach ($files as $file) {
-                $filePath = 'articles/' . uniqid() . '.' . $file->getClientOriginalExtension();
-
-                // ファイルをFirebase Storageにアップロード
-                $bucket->upload(
-                    file_get_contents($file->getRealPath()),
-                    ['name' => $filePath]
-                );
-
-                // 公開URLを組み立て
-                $filePathEncoded = urlencode($filePath);
-                $imageUrl = "https://firebasestorage.googleapis.com/v0/b/{$bucketName}/o/{$filePathEncoded}?alt=media";
-
-                $imagePaths[] = $imageUrl;
-            }
+            $imagePaths = $uploader->upload($files, 'articles');
         }
 
+        // 記事データの保存
         $article->fill($request->all());
         $article->user_id = $request->user()->id;
-        // 画像URLを設定（アップロードされた画像があれば、そうでなければnull）
         $article->image_paths = $imagePaths ? json_encode($imagePaths) : null;
-        // 記事を保存
         $article->save();
 
+        // タグを保存
         $request->tags->each(function ($tagName) use ($article) {
             $tag = Tag::firstOrCreate(['name' => $tagName]);
             $article->tags()->attach($tag);
@@ -90,40 +71,22 @@ class ArticleController extends Controller
         return view('articles.edit', compact('article', 'tagNames', 'allTagNames'));
     }
 
-    public function update(ArticleRequest $request, Article $article)
+    public function update(ArticleRequest $request, Article $article, FirebaseImageUploader $uploader)
     {
-        // 初期化：画像URLはnull
+        // アップロードされた画像があればFirebaseにアップロード
         $imagePaths = null;
-        // 画像のアップロード処理
         if ($request->hasFile('images')) {
             $files = $request->file('images');
-            $firebaseStorage = app('firebase.storage');
-            $bucketName = env("FIREBASE_STORAGE_BUCKET");
-            $bucket = $firebaseStorage->getBucket($bucketName);
-
-            $imagePaths = [];  // 画像の保存パスを格納する配列
-            foreach ($files as $file) {
-                $filePath = 'articles/' . uniqid() . '.' . $file->getClientOriginalExtension();
-
-                // ファイルをFirebase Storageにアップロード
-                $bucket->upload(
-                    file_get_contents($file->getRealPath()),
-                    ['name' => $filePath]
-                );
-
-                // 公開URLを組み立て
-                $filePathEncoded = urlencode($filePath);
-                $imageUrl = "https://firebasestorage.googleapis.com/v0/b/{$bucketName}/o/{$filePathEncoded}?alt=media";
-
-                $imagePaths[] = $imageUrl;
-            }
+            $imagePaths = $uploader->upload($files, 'articles');
         }
-        // 画像URLを設定（アップロードされた画像があれば、そうでなければnull）
-        $article->image_paths = $imagePaths ? json_encode($imagePaths) : null;
 
+        // 記事データの保存
+        $article->image_paths = $imagePaths ? json_encode($imagePaths) : null;
         $article->fill($request->all())->save();
 
+        // 記事に紐づいている既存のタグをすべて解除する（多対多の関係を一旦リセット）
         $article->tags()->detach();
+        // タグを保存
         $request->tags->each(function ($tagName) use ($article) {
             $tag = Tag::firstOrCreate(['name' => $tagName]);
             $article->tags()->attach($tag);
