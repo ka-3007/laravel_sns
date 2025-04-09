@@ -5,10 +5,8 @@ namespace App\Http\Controllers;
 use App\Http\Requests\ArticleRequest;
 use App\Models\Article;
 use App\Models\Tag;
-use App\Services\FirebaseImageUploader;
 use Illuminate\Http\Request;
 use App\Services\TagService;
-use Illuminate\Support\Str;
 
 class ArticleController extends Controller
 {
@@ -35,22 +33,12 @@ class ArticleController extends Controller
         return view('articles.create', compact('allTagNames'));
     }
 
-    public function store(ArticleRequest $request, Article $article, FirebaseImageUploader $uploader)
+    public function store(ArticleRequest $request, Article $article)
     {
-        // アップロードされた画像があればFirebaseにアップロード
-        $imagePaths = null;
-        if ($request->hasFile('images')) {
-            $files = $request->file('images');
-            $imagePaths = $uploader->upload($files, 'articles');
-        }
-
-        // 記事データの保存
         $article->fill($request->all());
         $article->user_id = $request->user()->id;
-        $article->image_paths = $imagePaths ? json_encode($imagePaths) : null;
         $article->save();
 
-        // タグを保存
         $request->tags->each(function ($tagName) use ($article) {
             $tag = Tag::firstOrCreate(['name' => $tagName]);
             $article->tags()->attach($tag);
@@ -71,22 +59,11 @@ class ArticleController extends Controller
         return view('articles.edit', compact('article', 'tagNames', 'allTagNames'));
     }
 
-    public function update(ArticleRequest $request, Article $article, FirebaseImageUploader $uploader)
+    public function update(ArticleRequest $request, Article $article)
     {
-        // アップロードされた画像があればFirebaseにアップロード
-        $imagePaths = null;
-        if ($request->hasFile('images')) {
-            $files = $request->file('images');
-            $imagePaths = $uploader->upload($files, 'articles');
-        }
-
-        // 記事データの保存
-        $article->image_paths = $imagePaths ? json_encode($imagePaths) : null;
         $article->fill($request->all())->save();
 
-        // 記事に紐づいている既存のタグをすべて解除する（多対多の関係を一旦リセット）
         $article->tags()->detach();
-        // タグを保存
         $request->tags->each(function ($tagName) use ($article) {
             $tag = Tag::firstOrCreate(['name' => $tagName]);
             $article->tags()->attach($tag);

@@ -11,5 +11,3 @@
   <label></label>
   <textarea name="body" required class="form-control" rows="16" placeholder="本文">{{ $article->body ?? old('body') }}</textarea>
 </div>
-
-<image-upload :existing-image-urls="{{ $article->image_paths ?? json_decode('') }}"></image-upload>
