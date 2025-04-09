@@ -37,6 +37,8 @@ class ArticleRequest extends FormRequest
                     }
                 },
             ],
+            'images' => 'nullable|array',
+            'images.*' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
         ];
     }
 
