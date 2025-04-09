@@ -37,7 +37,8 @@ class ArticleRequest extends FormRequest
                     }
                 },
             ],
-            'image' => 'nullable|mimes:jpeg,jpg,png,gif|image|max:5120', // 画像ファイルが最大4枚まで
+            'images' => 'nullable|array',
+            'images.*' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
         ];
     }
 

@@ -66,9 +66,16 @@
     </div>
 
     {{-- 画像が存在する場合に表示 --}}
-    @if ($article->image_url)
-      <div class="mt-3">
-        <img src="{{ $article->image_url }}" alt="記事画像" class="img-fluid">
+    @if ($article->image_paths)
+      @php
+        $imagePaths = json_decode($article->image_paths, true); // JSONを配列としてデコード
+      @endphp
+
+      <div class="mt-3"
+        style="display: grid; grid-template-columns: repeat({{ count($imagePaths) > 1 ? 2 : 1 }}, 1fr); gap: 10px;">
+        @foreach ($imagePaths as $imagePath)
+          <img src="{{ $imagePath }}" alt="記事画像" class="img-fluid">
+        @endforeach
       </div>
     @endif
   </div>

@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('articles', function (Blueprint $table) {
-            $table->string('image_url')->nullable(); // 画像URLを保存するカラム
+            $table->json('image_paths')->nullable(); // 画像URLを保存するカラム
         });
     }
 
@@ -22,7 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('articles', function (Blueprint $table) {
-            $table->dropColumn('image_url');
+            $table->dropColumn('image_paths');
         });
     }
 };

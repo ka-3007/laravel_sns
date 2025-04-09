@@ -37,31 +37,36 @@ class ArticleController extends Controller
     public function store(ArticleRequest $request, Article $article)
     {
         // 初期化：画像URLはnull
-        $imageUrl = null;
+        $imagePaths = null;
         // 画像のアップロード処理
-        if ($request->hasFile('image')) {
-            $file = $request->file('image');
+        if ($request->hasFile('images')) {
+            $files = $request->file('images');
             $firebaseStorage = app('firebase.storage');
             $bucketName = env("FIREBASE_STORAGE_BUCKET");
             $bucket = $firebaseStorage->getBucket($bucketName);
 
-            $filePath = 'articles/' . uniqid() . '.' . $file->getClientOriginalExtension();
+            $imagePaths = [];  // 画像の保存パスを格納する配列
+            foreach ($files as $file) {
+                $filePath = 'articles/' . uniqid() . '.' . $file->getClientOriginalExtension();
 
-            // ファイルをFirebase Storageにアップロード
-            $bucket->upload(
-                file_get_contents($file->getRealPath()),
-                ['name' => $filePath]
-            );
+                // ファイルをFirebase Storageにアップロード
+                $bucket->upload(
+                    file_get_contents($file->getRealPath()),
+                    ['name' => $filePath]
+                );
 
-            // 公開URLを組み立て
-            $filePathEncoded = urlencode($filePath);
-            $imageUrl = "https://firebasestorage.googleapis.com/v0/b/{$bucketName}/o/{$filePathEncoded}?alt=media";
+                // 公開URLを組み立て
+                $filePathEncoded = urlencode($filePath);
+                $imageUrl = "https://firebasestorage.googleapis.com/v0/b/{$bucketName}/o/{$filePathEncoded}?alt=media";
+
+                $imagePaths[] = $imageUrl;
+            }
         }
 
         $article->fill($request->all());
         $article->user_id = $request->user()->id;
         // 画像URLを設定（アップロードされた画像があれば、そうでなければnull）
-        $article->image_url =  $imageUrl;
+        $article->image_paths = $imagePaths ? json_encode($imagePaths) : null;
         // 記事を保存
         $article->save();
 
@@ -87,6 +92,35 @@ class ArticleController extends Controller
 
     public function update(ArticleRequest $request, Article $article)
     {
+        // 初期化：画像URLはnull
+        $imagePaths = null;
+        // 画像のアップロード処理
+        if ($request->hasFile('images')) {
+            $files = $request->file('images');
+            $firebaseStorage = app('firebase.storage');
+            $bucketName = env("FIREBASE_STORAGE_BUCKET");
+            $bucket = $firebaseStorage->getBucket($bucketName);
+
+            $imagePaths = [];  // 画像の保存パスを格納する配列
+            foreach ($files as $file) {
+                $filePath = 'articles/' . uniqid() . '.' . $file->getClientOriginalExtension();
+
+                // ファイルをFirebase Storageにアップロード
+                $bucket->upload(
+                    file_get_contents($file->getRealPath()),
+                    ['name' => $filePath]
+                );
+
+                // 公開URLを組み立て
+                $filePathEncoded = urlencode($filePath);
+                $imageUrl = "https://firebasestorage.googleapis.com/v0/b/{$bucketName}/o/{$filePathEncoded}?alt=media";
+
+                $imagePaths[] = $imageUrl;
+            }
+        }
+        // 画像URLを設定（アップロードされた画像があれば、そうでなければnull）
+        $article->image_paths = $imagePaths ? json_encode($imagePaths) : null;
+
         $article->fill($request->all())->save();
 
         $article->tags()->detach();
