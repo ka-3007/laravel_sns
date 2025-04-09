@@ -7,6 +7,7 @@ use App\Models\Article;
 use App\Models\Tag;
 use Illuminate\Http\Request;
 use App\Services\TagService;
+use Illuminate\Support\Str;
 
 class ArticleController extends Controller
 {
@@ -35,8 +36,33 @@ class ArticleController extends Controller
 
     public function store(ArticleRequest $request, Article $article)
     {
+        // 初期化：画像URLはnull
+        $imageUrl = null;
+        // 画像のアップロード処理
+        if ($request->hasFile('image')) {
+            $file = $request->file('image');
+            $firebaseStorage = app('firebase.storage');
+            $bucketName = env("FIREBASE_STORAGE_BUCKET");
+            $bucket = $firebaseStorage->getBucket($bucketName);
+
+            $filePath = 'articles/' . uniqid() . '.' . $file->getClientOriginalExtension();
+
+            // ファイルをFirebase Storageにアップロード
+            $bucket->upload(
+                file_get_contents($file->getRealPath()),
+                ['name' => $filePath]
+            );
+
+            // 公開URLを組み立て
+            $filePathEncoded = urlencode($filePath);
+            $imageUrl = "https://firebasestorage.googleapis.com/v0/b/{$bucketName}/o/{$filePathEncoded}?alt=media";
+        }
+
         $article->fill($request->all());
         $article->user_id = $request->user()->id;
+        // 画像URLを設定（アップロードされた画像があれば、そうでなければnull）
+        $article->image_url =  $imageUrl;
+        // 記事を保存
         $article->save();
 
         $request->tags->each(function ($tagName) use ($article) {

@@ -64,6 +64,13 @@
     <div class="card-text">
       {{ $article->body }}
     </div>
+
+    {{-- 画像が存在する場合に表示 --}}
+    @if ($article->image_url)
+      <div class="mt-3">
+        <img src="{{ $article->image_url }}" alt="記事画像" class="img-fluid">
+      </div>
+    @endif
   </div>
   <div class="card-body pt-0 pb-2 pl-3">
     <div class="card-text">
