@@ -8,11 +8,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   git \
   curl \
   python3 \
-  postgresql-client \ 
+  postgresql-client \
+  libfreetype6-dev \
+  libjpeg62-turbo-dev \
+  libpng-dev \
+  && docker-php-ext-configure gd --with-freetype --with-jpeg \
   && docker-php-ext-install \
     pdo_pgsql \
     sockets \
     zip \
+    gd \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
