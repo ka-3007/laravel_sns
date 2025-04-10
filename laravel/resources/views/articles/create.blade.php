@@ -14,7 +14,7 @@
             <div class="card-text">
               <form method="POST" action="{{ route('articles.store') }}" enctype="multipart/form-data">
                 @include('articles.form')
-                <button type="submit" class="btn btn-primary btn-block rounded-pill py-2 mt-3">投稿する</button>
+                <button type="submit" class="btn btn-primary btn-block">投稿する</button>
               </form>
             </div>
           </div>

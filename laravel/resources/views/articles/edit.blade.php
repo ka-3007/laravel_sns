@@ -16,7 +16,7 @@
                 enctype="multipart/form-data">
                 @method('PATCH')
                 @include('articles.form')
-                <button type="submit" class="btn btn-primary btn-block rounded-pill py-2 mt-3">更新する</button>
+                <button type="submit" class="btn btn-primary btn-block">更新する</button>
               </form>
             </div>
           </div>
