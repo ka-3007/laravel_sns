@@ -47,6 +47,11 @@ export default {
 }
 </style>
 <style lang="css">
+.vue-tags-input {
+    border: 1px solid #ced4da;
+    border-radius: .375rem;
+}
+
 .vue-tags-input .ti-tag {
     background: transparent;
     border: 1px solid #747373;

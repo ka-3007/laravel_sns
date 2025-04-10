@@ -11,7 +11,8 @@
       @endif
     </div>
     <h2 class="h5 card-title m-0">
-      <a href="{{ route('users.show', ['name' => $person->name]) }}" class="text-dark">{{ $person->name }}</a>
+      <a href="{{ route('users.show', ['name' => $person->name]) }}" class="text-dark"
+        style="font-weight: 600; font-size: 18px;">{{ $person->name }}</a>
     </h2>
   </div>
 </div>
