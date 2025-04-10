@@ -24,9 +24,7 @@ class ArticleRequest extends FormRequest
         return [
             'title' => 'required|max:50',
             'body' => 'required|max:500',
-            // 'tags' => 'json|regex:/^(?!.*\s).+$/u|regex:/^(?!.*\/).*$/u',
             'tags' => [
-                'required',
                 'json',
                 "regex:/^(?!.*\s).+$/u",
                 "regex:/^(?!.*\/).*$/u",
@@ -37,7 +35,7 @@ class ArticleRequest extends FormRequest
                     }
                 },
             ],
-            'images' => 'nullable|array',
+            'images' => 'nullable|array|max:4',
             'images.*' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
         ];
     }
@@ -48,6 +46,7 @@ class ArticleRequest extends FormRequest
             'title' => 'タイトル',
             'body' => '本文',
             'tags' => 'タグ',
+            'images' => '画像',
         ];
     }
 
