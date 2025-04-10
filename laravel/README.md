@@ -1,66 +1,99 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 環境構築手順
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+このドキュメントでは、ローカル環境での Laravel プロジェクトのセットアップ手順を説明します。
 
-## About Laravel
+## 1. `.env` ファイルの作成
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+まず、`laravel` フォルダに移動し、`.env.example` をコピーして `.env` ファイルを作成します。
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+```bash
+cp .env.example .env
+```
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## 2. Google OAuth クライアント ID とシークレットキーの取得
 
-## Learning Laravel
+1. [Google Cloud Console](https://console.cloud.google.com/project) でプロジェクトを作成します。
+2. 作成したプロジェクトの「OAuth 2.0 クライアント ID」を作成し、「承認済みのリダイレクト URI」に以下の URL を設定します：http://localhost/login/google/callback
+3. クライアント ID と シークレットキーを取得します。
+4. `.env` ファイルに、取得したクライアント ID と シークレットキーを設定します：
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+```env
+GOOGLE_CLIENT_ID=your-client-id
+GOOGLE_CLIENT_SECRET=your-client-secret
+```
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+## Laradock 環境設定の手順
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+以降の手順はすべて `laradock` フォルダ内で実行してください。
 
-## Laravel Sponsors
+## 3. Laradock 環境の設定
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+`.env.example` をコピーして `.env` ファイルを作成します。
 
-### Premium Partners
+```bash
+cp .env.example .env
+```
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+## 4. Docker コンテナの起動
 
-## Contributing
+Docker コンテナを起動します。
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+```bash
+docker-compose up -d
+```
 
-## Code of Conduct
+## 5. Laravel の依存関係のインストール
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+コンテナ内で Composer を使用して Laravel の依存パッケージをインストールします。
 
-## Security Vulnerabilities
+```bash
+docker-compose exec workspace composer install
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## 6. アプリケーションキーの生成
 
-## License
+アプリケーションのキーを生成します。
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+```bash
+docker-compose exec workspace php artisan key:generate
+```
+
+## 7. データベースのマイグレーション
+
+データベースのマイグレーションを実行して、必要なテーブルを作成します。
+
+```bash
+docker-compose exec workspace php artisan migrate
+```
+
+## 8. ストレージのシンボリックリンク作成
+
+`public/storage` にシンボリックリンクを作成します。
+
+```bash
+docker-compose exec workspace php artisan storage:link
+```
+
+## 9. NPM パッケージのインストール
+
+必要な NPM パッケージをインストールします。
+
+```bash
+docker-compose exec workspace npm install
+```
+
+## 10. 開発環境でのビルド
+
+開発環境用にフロントエンドのビルドを実行します。
+
+```bash
+docker-compose exec workspace npm run dev
+```
+
+## 11. キューのワーカーを開始
+
+別のターミナルを開いて、キューを処理するワーカーを起動します。
+
+```bash
+docker-compose exec workspace php artisan queue:work
+```
