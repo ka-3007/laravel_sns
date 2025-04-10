@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Intervention\Image\ImageManager;
 use Intervention\Image\Drivers\Gd\Driver;
 
@@ -19,9 +20,12 @@ class FirebaseImageUploader
 
     public function __construct()
     {
-        $firebaseStorage = app('firebase.storage');
-        $this->bucketName = env('FIREBASE_STORAGE_BUCKET');
-        $this->bucket = $firebaseStorage->getBucket($this->bucketName);
+        // 環境がローカルでない場合のみFirebase設定を行う
+        if (app()->environment('production')) {
+            $firebaseStorage = app('firebase.storage');
+            $this->bucketName = env('FIREBASE_STORAGE_BUCKET');
+            $this->bucket = $firebaseStorage->getBucket($this->bucketName);
+        }
 
         // ImageManagerのインスタンスを作成
         $this->imageManager = new ImageManager(new Driver());
@@ -66,21 +70,33 @@ class FirebaseImageUploader
                 $image->save($tempPath);
             }
 
-            // Firebaseにアップロード
-            $filePath = $directory . '/' . uniqid() . '.' . $extension;
-            $this->bucket->upload(
-                file_get_contents($tempPath),
-                ['name' => $filePath]
-            );
+            // 環境に応じて処理を切り替える
+            if (app()->environment('production')) {
+                // Firebaseにアップロード
+                $filePath = $directory . '/' . uniqid() . '.' . $extension;
+                $this->bucket->upload(
+                    file_get_contents($tempPath),
+                    ['name' => $filePath]
+                );
+
+                // FirebaseのURLを取得
+                $filePathEncoded = urlencode($filePath);
+                $imageUrl = "https://firebasestorage.googleapis.com/v0/b/{$this->bucketName}/o/{$filePathEncoded}?alt=media";
+                $imageUrls[] = $imageUrl;
+            } else {
+                // ローカルに保存
+                $filePath = $directory . '/' . uniqid() . '.' . $extension;
+                Storage::disk('public')->put($filePath, file_get_contents($tempPath));
+
+                // ローカルURLを取得
+                $imageUrl = asset('storage/' . $filePath);
+                $imageUrls[] = $imageUrl;
+            }
 
             // 一時ファイルを削除
             if (file_exists($tempPath)) {
                 unlink($tempPath);
             }
-
-            $filePathEncoded = urlencode($filePath);
-            $imageUrl = "https://firebasestorage.googleapis.com/v0/b/{$this->bucketName}/o/{$filePathEncoded}?alt=media";
-            $imageUrls[] = $imageUrl;
         }
 
         return $imageUrls;
