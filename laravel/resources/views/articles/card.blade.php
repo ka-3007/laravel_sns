@@ -33,6 +33,28 @@
           </div>
         </div>
       </div>
+
+      <div id="modal-delete-{{ $article->id }}" class="modal fade" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+          <div class="modal-content rounded-4 border-0 shadow-sm">
+            <div class="modal-header border-0 p-3">
+              <h5 class="modal-title fs-5 fw-semibold text-danger">削除の確認</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="閉じる"></button>
+            </div>
+            <form method="POST" action="{{ route('articles.destroy', ['article' => $article]) }}">
+              @csrf
+              @method('DELETE')
+              <div class="modal-body px-4 pb-3">
+                <p class="mb-0 fw-medium">{{ $article->title }} を削除します。よろしいですか？</p>
+              </div>
+              <div class="modal-footer border-0 d-flex justify-content-end gap-2 px-4 pb-4">
+                <button type="button" class="btn btn-light rounded-pill px-4" data-dismiss="modal">キャンセル</button>
+                <button type="submit" class="btn btn-danger rounded-pill px-4">削除する</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
     @endif
   </div>
 
@@ -56,10 +78,15 @@
       <div class="mt-3"
         style="display: grid; grid-template-columns: repeat({{ count($mediaPaths) > 1 ? 2 : 1 }}, 1fr); gap: 8px;">
         @foreach ($mediaPaths as $mediaPath)
-          @if (in_array(pathinfo($mediaPath, PATHINFO_EXTENSION), ['mp4', 'webm', 'ogg']))
+          @php
+            $pathWithoutQuery = explode('?', $mediaPath)[0];
+            $extension = strtolower(pathinfo($pathWithoutQuery, PATHINFO_EXTENSION));
+          @endphp
+
+          @if (in_array($extension, ['mp4', 'webm', 'ogg']))
             <!-- 動画の場合 -->
             <video width="100%" height="auto" controls>
-              <source src="{{ $mediaPath }}" type="video/{{ pathinfo($mediaPath, PATHINFO_EXTENSION) }}">
+              <source src="{{ $mediaPath }}" type="video/{{ $extension }}">
               Your browser does not support the video tag.
             </video>
           @else
