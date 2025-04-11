@@ -1,15 +1,19 @@
 <template>
     <div class="form-group">
-        <!-- 画像選択 -->
-        <label for="fileInput" class="font-weight-bold">画像を選択</label>
+        <!-- ファイル選択 -->
+        <label for="fileInput" class="font-weight-bold">画像・動画を選択</label>
         <input type="file" ref="fileInput" name="images[]" id="fileInput" class="form-control-file"
-            @change="handleImageChange" multiple />
+            @change="handleMediaChange" multiple accept="image/*,video/*" />
 
-        <!-- 画像プレビュー -->
-        <div v-if="imageUrls.length > 0" id="image-wrapper">
-            <div class="mt-3 image-grid">
-                <div v-for="(imageUrl, index) in imageUrls" :key="index" class="image-preview">
-                    <img :src="imageUrl.url || imageUrl" alt="現在の画像" class="img-fluid rounded" />
+        <!-- プレビュー -->
+        <div v-if="mediaUrls.length > 0" id="media-wrapper">
+            <div class="mt-3 media-grid">
+                <div v-for="(media, index) in mediaUrls" :key="index" class="media-preview">
+                    <!-- 画像プレビュー -->
+                    <img v-if="media.type === 'image'" :src="media.url" alt="画像" class="img-fluid rounded" />
+                    <!-- 動画プレビュー -->
+                    <video v-else-if="media.type === 'video'" :src="media.url" controls
+                        class="img-fluid rounded"></video>
                 </div>
             </div>
         </div>
@@ -26,48 +30,58 @@ export default {
     },
     data() {
         return {
-            imageUrls: this.existingImageUrls.map((url) => ({ url })), // 既存の画像URLをオブジェクト形式に変換
+            mediaUrls: this.existingImageUrls.map((url) => ({
+                url,
+                type: this.getMediaType(url),
+            })),
         };
     },
     methods: {
-        handleImageChange(event) {
+        handleMediaChange(event) {
             const files = Array.from(event.target.files);
 
             if (files.length > 0) {
-                // 新しい選択があった場合、既存の画像をすべてクリア
-                this.imageUrls = [];
+                this.mediaUrls = [];
 
-                // 最大4つまでに制限
                 const filesToProcess = files.slice(0, 4);
 
                 filesToProcess.forEach((file) => {
                     const reader = new FileReader();
                     reader.onload = (e) => {
-                        this.imageUrls.push({
+                        this.mediaUrls.push({
                             url: e.target.result,
+                            type: this.getMediaType(file.name),
                         });
                     };
                     reader.readAsDataURL(file);
                 });
             }
         },
+        getMediaType(filename) {
+            const ext = filename.split('.').pop().toLowerCase();
+            const imageTypes = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+            const videoTypes = ['mp4', 'webm', 'ogg'];
+            if (imageTypes.includes(ext)) return 'image';
+            if (videoTypes.includes(ext)) return 'video';
+            return 'unknown';
+        },
     },
 };
 </script>
 
 <style scoped>
-/* グリッドレイアウトのスタイル */
-.image-grid {
+.media-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 8px;
 }
 
-.image-preview {
+.media-preview {
     position: relative;
 }
 
-.image-preview img {
+.media-preview img,
+.media-preview video {
     width: 100%;
     height: auto;
     border-radius: 8px;
@@ -75,7 +89,6 @@ export default {
     box-shadow: 0 0 6px rgba(0, 0, 0, 0.1);
 }
 
-/* 画像選択ボタンのスタイル */
 #fileInput {
     padding: 10px;
     border-radius: 8px;
@@ -89,7 +102,7 @@ export default {
     background-color: #e6e6e6;
 }
 
-#image-wrapper {
+#media-wrapper {
     margin-top: 10px;
 }
 </style>

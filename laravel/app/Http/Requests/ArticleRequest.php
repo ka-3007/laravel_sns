@@ -36,7 +36,7 @@ class ArticleRequest extends FormRequest
                 },
             ],
             'images' => 'nullable|array|max:4',
-            'images.*' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
+            'images.*' => 'nullable|file|mimes:jpeg,png,jpg,mp4,webm,ogg|max:1048576',
         ];
     }
 
@@ -46,7 +46,8 @@ class ArticleRequest extends FormRequest
             'title' => 'タイトル',
             'body' => '本文',
             'tags' => 'タグ',
-            'images' => '画像',
+            'images' => '画像・動画',
+            'images.*' => '画像・動画',
         ];
     }
 

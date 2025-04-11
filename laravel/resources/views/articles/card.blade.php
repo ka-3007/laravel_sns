@@ -47,17 +47,26 @@
     <!-- 本文 -->
     <p class="card-text">{{ $article->body }}</p>
 
-    <!-- 画像 -->
+    <!-- 画像と動画の表示 -->
     @if ($article->image_paths)
       @php
-        $imagePaths = json_decode($article->image_paths, true);
+        $mediaPaths = json_decode($article->image_paths, true);
       @endphp
 
       <div class="mt-3"
-        style="display: grid; grid-template-columns: repeat({{ count($imagePaths) > 1 ? 2 : 1 }}, 1fr); gap: 8px;">
-        @foreach ($imagePaths as $imagePath)
-          <img src="{{ $imagePath }}" alt="記事画像" class="img-fluid rounded"
-            style="object-fit: cover; width: 100%; height: auto;">
+        style="display: grid; grid-template-columns: repeat({{ count($mediaPaths) > 1 ? 2 : 1 }}, 1fr); gap: 8px;">
+        @foreach ($mediaPaths as $mediaPath)
+          @if (in_array(pathinfo($mediaPath, PATHINFO_EXTENSION), ['mp4', 'webm', 'ogg']))
+            <!-- 動画の場合 -->
+            <video width="100%" height="auto" controls>
+              <source src="{{ $mediaPath }}" type="video/{{ pathinfo($mediaPath, PATHINFO_EXTENSION) }}">
+              Your browser does not support the video tag.
+            </video>
+          @else
+            <!-- 画像の場合 -->
+            <img src="{{ $mediaPath }}" alt="記事画像" class="img-fluid rounded"
+              style="object-fit: cover; width: 100%; height: auto;">
+          @endif
         @endforeach
       </div>
     @endif

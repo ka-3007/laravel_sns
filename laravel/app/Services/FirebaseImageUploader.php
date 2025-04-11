@@ -47,27 +47,36 @@ class FirebaseImageUploader
             // 一時ファイルパスを生成
             $tempPath = sys_get_temp_dir() . '/' . uniqid() . '.' . $file->getClientOriginalExtension();
 
-            // 画像を最適化
-            $image = $this->imageManager->read($file->getRealPath());
-
-            // 固定値を使ってリサイズ
-            if (self::MAX_WIDTH || self::MAX_HEIGHT) {
-                $image->scale(width: self::MAX_WIDTH, height: self::MAX_HEIGHT);
-            }
-
-            // 画像フォーマットに応じた保存処理
+            // ファイル拡張子を取得
             $extension = strtolower($file->getClientOriginalExtension());
-            if (in_array($extension, ['jpg', 'jpeg'])) {
-                $image->toJpeg(self::IMAGE_QUALITY)->save($tempPath);
-            } elseif ($extension === 'png') {
-                $image->toPng()->save($tempPath);
-            } elseif ($extension === 'gif') {
-                $image->toGif()->save($tempPath);
-            } elseif ($extension === 'webp') {
-                $image->toWebp(self::IMAGE_QUALITY)->save($tempPath);
-            } else {
-                // その他のフォーマットはそのまま保存
-                $image->save($tempPath);
+
+            // 画像の場合
+            if (in_array($extension, ['jpg', 'jpeg', 'png', 'gif', 'webp'])) {
+                // 画像を最適化
+                $image = $this->imageManager->read($file->getRealPath());
+
+                // 固定値を使ってリサイズ
+                if (self::MAX_WIDTH || self::MAX_HEIGHT) {
+                    $image->scale(width: self::MAX_WIDTH, height: self::MAX_HEIGHT);
+                }
+
+                // 画像フォーマットに応じた保存処理
+                if (in_array($extension, ['jpg', 'jpeg'])) {
+                    $image->toJpeg(self::IMAGE_QUALITY)->save($tempPath);
+                } elseif ($extension === 'png') {
+                    $image->toPng()->save($tempPath);
+                } elseif ($extension === 'gif') {
+                    $image->toGif()->save($tempPath);
+                } elseif ($extension === 'webp') {
+                    $image->toWebp(self::IMAGE_QUALITY)->save($tempPath);
+                } else {
+                    $image->save($tempPath);
+                }
+            }
+            // 動画の場合
+            elseif (in_array($extension, ['mp4', 'webm', 'ogg'])) {
+                // 動画ファイルをそのまま保存
+                $file->move(sys_get_temp_dir(), $tempPath);
             }
 
             // 環境に応じて処理を切り替える
