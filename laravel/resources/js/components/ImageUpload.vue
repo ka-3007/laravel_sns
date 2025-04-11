@@ -58,13 +58,14 @@ export default {
             }
         },
         getMediaType(filename) {
-            const ext = filename.split('.').pop().toLowerCase();
+            const cleanFilename = filename.split('?')[0]; // クエリパラメータ除去
+            const ext = cleanFilename.split('.').pop().toLowerCase();
             const imageTypes = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
             const videoTypes = ['mp4', 'webm', 'ogg'];
             if (imageTypes.includes(ext)) return 'image';
             if (videoTypes.includes(ext)) return 'video';
             return 'unknown';
-        },
+        }
     },
 };
 </script>
