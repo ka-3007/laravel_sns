@@ -13,10 +13,17 @@
             @include('error_card_list')
             <div class="card-text">
               <form method="POST" action="{{ route('articles.update', ['article' => $article]) }}"
-                enctype="multipart/form-data">
+                enctype="multipart/form-data" data-loading>
+                @csrf
                 @method('PATCH')
                 @include('articles.form')
-                <button type="submit" class="btn btn-primary btn-block">更新する</button>
+                <button type="submit"
+                  class="btn btn-primary btn-block d-flex justify-content-center align-items-center gap-2"
+                  data-loading-text="更新中...">
+                  <span class="spinner-border spinner-border-sm text-light d-none" role="status"
+                    aria-hidden="true"></span>
+                  <span class="button-text">更新する</span>
+                </button>
               </form>
             </div>
           </div>
@@ -25,3 +32,5 @@
     </div>
   </div>
 @endsection
+
+@include('articles.loading')
