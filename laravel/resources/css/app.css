@@ -4,6 +4,7 @@
 
 body {
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  background-color: #f0f8ff; /* 薄い青色 */
 }
 
 @media (min-width: 1280px) {
