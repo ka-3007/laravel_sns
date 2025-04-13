@@ -12,3 +12,20 @@ body {
     max-width: 1024px !important;
   }
 }
+
+.nav-tabs .nav-link {
+  color: #1da1f2;
+  background-color: #fff;
+  font-weight: 600;
+}
+
+.nav-tabs .nav-link:hover {
+  background-color: #e9ecef;
+  border-color: #dee2e6;
+}
+
+.nav-tabs .nav-link.active {
+  color: #fff;
+  background-color: #1da1f2;
+  border-color: #dee2e6 #dee2e6 #fff;
+}
