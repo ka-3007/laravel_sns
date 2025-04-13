@@ -73,9 +73,13 @@ class ArticleController extends Controller
 
     public function update(ArticleRequest $request, Article $article, FirebaseImageUploader $uploader)
     {
-
         // 既存の画像を保持
         $imagePaths = $article->image_paths ? json_decode($article->image_paths, true) : null;
+
+        // isImageDeleted が true の場合は null にする
+        if ($request->isImageDeleted) {
+            $imagePaths = null;
+        }
 
         // アップロードされた画像があればFirebaseにアップロード
         if ($request->hasFile('images')) {

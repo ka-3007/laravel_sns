@@ -5,3 +5,9 @@
 body {
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
+
+@media (min-width: 1280px) {
+  .container {
+    max-width: 1024px !important;
+  }
+}

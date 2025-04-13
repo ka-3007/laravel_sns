@@ -37,6 +37,7 @@ class ArticleRequest extends FormRequest
             ],
             'images' => 'nullable|array|max:4',
             'images.*' => 'nullable|file|mimes:jpeg,png,jpg,mp4,webm,ogg|max:1048576',
+            'isImageDeleted' => 'boolean',
         ];
     }
 
@@ -58,5 +59,12 @@ class ArticleRequest extends FormRequest
             ->map(function ($requestTag) {
                 return $requestTag->text;
             });
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'isImageDeleted' => filter_var($this->input('isImageDeleted'), FILTER_VALIDATE_BOOLEAN),
+        ]);
     }
 }

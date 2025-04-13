@@ -112,11 +112,11 @@
 
   <!-- タグ表示 -->
   @if ($article->tags->isNotEmpty())
-    <div class="card-body pt-0 pb-4 pl-3">
-      <div class="card-text  line-height">
+    <div class="card-body pt-0 pb-1 pl-3">
+      <div class="card-text line-height">
         @foreach ($article->tags as $tag)
           <a href="{{ route('tags.show', ['name' => $tag->name]) }}"
-            class="badge badge-light text-muted mr-2 mt-1 p-2">
+            class="badge badge-light text-muted mr-2 mb-3 p-2">
             {{ $tag->hashtag }}
           </a>
         @endforeach

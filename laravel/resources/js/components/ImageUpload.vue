@@ -17,6 +17,15 @@
                 </div>
             </div>
         </div>
+
+        <!-- ファイルがないときだけ空文字を送る -->
+        <input type="hidden" name="isImageDeleted" :value=isDeleted />
+        <!-- 画像削除ボタン -->
+        <div class="text-right mt-3">
+            <button type="button" class="btn btn-outline-danger" @click="resetFileInput">
+                <i class="fas fa-trash-alt mr-1"></i> 画像・動画を削除
+            </button>
+        </div>
     </div>
 </template>
 
@@ -34,6 +43,7 @@ export default {
                 url,
                 type: this.getMediaType(url),
             })),
+            isDeleted: false
         };
     },
     methods: {
@@ -56,6 +66,8 @@ export default {
                     reader.readAsDataURL(file);
                 });
             }
+            // ファイルが選択されたら、削除フラグをfalseに設定
+            this.isDeleted = false;
         },
         getMediaType(filename) {
             const cleanFilename = filename.split('?')[0]; // クエリパラメータ除去
@@ -65,6 +77,14 @@ export default {
             if (imageTypes.includes(ext)) return 'image';
             if (videoTypes.includes(ext)) return 'video';
             return 'unknown';
+        },
+        resetFileInput() {
+            // inputを空にする
+            this.$refs.fileInput.value = '';
+            // プレビューも初期化
+            this.mediaUrls = [];
+            // 削除されたとみなす
+            this.isDeleted = true;
         }
     },
 };
