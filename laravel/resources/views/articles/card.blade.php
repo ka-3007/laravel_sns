@@ -67,7 +67,7 @@
     </h5>
 
     <!-- 本文 -->
-    <p class="card-text">{{ $article->body }}</p>
+    <p class="card-text">{!! nl2br(e($article->body)) !!}</p>
 
     <!-- 画像と動画の表示 -->
     @if ($article->image_paths)
