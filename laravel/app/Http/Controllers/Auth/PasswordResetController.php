@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\RateLimiter;
 
 class PasswordResetController extends Controller
 {
@@ -25,9 +26,24 @@ class PasswordResetController extends Controller
             $request->only('email')
         );
 
-        return $response == Password::RESET_LINK_SENT
-            ? back()->with('status', __('passwords.sent'))
-            : back()->withErrors(['email' => __('passwords.user')]);
+        // リセットリンクが正常に送信された場合
+        if ($response == Password::RESET_LINK_SENT) {
+            return back()->with('status', __('passwords.sent'));
+        }
+
+        // ユーザーが見つからなかった場合
+        if ($response == Password::INVALID_USER) {
+            return back()->withErrors(['email' => __('passwords.user')]);
+        }
+
+
+        // 頻度制限に引っかかった場合（レスポンスが適切にエラーとして返される）
+        if ($response === 'passwords.throttled') {
+            return back()->withErrors(['email' => __('passwords.throttled')]);
+        }
+
+
+        return back()->withErrors(['email' => __('passwords.throttled')]);
     }
 
     // パスワードリセットフォームを表示
